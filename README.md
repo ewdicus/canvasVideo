@@ -1,4 +1,3 @@
-canvas-video-effects
-====================
+#Canvas Video
 
-Live Image Processing w/ getUserMedia() &amp; Web Workers
+Experimenting with image processing

@@ -1,18 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>WebCam Effects</title>
-	<style>
-		.hidden {
-			/*display: none;*/
-		}
-	</style>
+	<title>Image Size</title>
 </head>
 <body>
 				
 	<video id="video-stream" style="display:none;" width=320 height=240></video>
 	<canvas id="canvas-video" width=320 height=240></canvas>
-	<canvas id="canvas-small" width=80 height=60 class="hidden"></canvas>
+	<canvas id="canvas-small" width=80 height=60></canvas>
 	<canvas id="canvas-effects" width=320 height=240></canvas>
 
 	<script type="text/javascript">
@@ -24,25 +19,19 @@
 				ctx = canvas.getContext('2d'),
 				ctxSmall = canvasSmall.getContext('2d');
 				ctxEffects = canvasEffect.getContext('2d'),
-				processor = new Worker('image-worker.js');
+				// processor = new Worker('image-worker.js');
 				w = video.width,
-				h = video.height,
-				ws = canvasSmall.width,
-				hs = canvasSmall.height,
-				imgData = ctxSmall.getImageData(0,0,ws,hs);
+				h = video.height;
+			var imgData = ctxEffects.getImageData(0,0,w,h);
 
 			/* Setup WebWorker messaging */
-			processor.onmessage = function(event){
-				// Now we're getting back an array buffer
-				// that corresponds to the smaller image
-				var buf8 = new Uint8ClampedArray(event.data);
-				// Set that as the data for the ctxEffects context
-				imgData.data.set(buf8);
-				ctxSmall.putImageData(imgData, 0, 0);
-				// TODO - How do we merge this data with the video?
-				//ctxEffects.drawImage(video, 0, 0, w, h);
-				ctxEffects.drawImage(canvasSmall, 0, 0, w, h);
-			};
+			// processor.onmessage = function(event){
+			// 	// Now we're getting back an array buffer
+			// 	var buf8 = new Uint8ClampedArray(event.data);
+			// 	// Set that as the data for the ctxEffects context
+			// 	imgData.data.set(buf8);
+			// 	ctxEffects.putImageData(imgData, 0, 0);
+			// };
 
 			/* Setup video stream and canvas */
 			navigator.getUserMedia =
@@ -62,16 +51,17 @@
 			var render = function(){
 				ctx.drawImage(video, 0, 0, w, h);
 				ctxSmall.drawImage(video, 0, 0, canvasSmall.width, canvasSmall.height);
-				// Showing the larger video, but we're passing the smaller image data
-				var srcData = ctxSmall.getImageData(0,0,ws,hs);
+				var srcData = ctxSmall.getImageData(0,0,w,h);
 
+				ctxEffects.drawImage(canvasSmall, 0,0,w,h);
 				// Don't post the imageData
 				// Instead post the data directly
 				// It's an arrayBuffer, so it's a transferable object
 				var ab = srcData.data;
-				processor.postMessage(ab.buffer, [ab.buffer]);
+				// processor.postMessage(ab.buffer, [ab.buffer]);
 			};
 		})();
 	</script>
+
 </body>
 </html>
